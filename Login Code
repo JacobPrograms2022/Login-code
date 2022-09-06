@@ -1,0 +1,190 @@
+#This was inspired by https://www.101computing.net/my-login-script/
+import random
+import string
+print("=====================")
+print("=      SIGN UP      =")
+print("=====================")
+
+#while loop booleans:
+n = 1
+active = 1
+
+def spv(password):
+    #Strong Password Verification. Tests strength of password and includes a CAPTCHA
+    global n
+    n = 1
+    punct = string.punctuation
+    pswrd = password
+    print(punct)
+    if len(pswrd) < 8:
+        print("Password must be over 7 charcters long!")
+    
+        
+    elif all(not char in punct for char in pswrd) :
+        print("Password must contain a special character. !?, ... etc")
+    
+        
+    elif all(not char.isupper() for char in pswrd):
+        print("Password must contain at least one UPPERCASE letter!")
+
+            
+    elif all(not char.isdigit() for char in pswrd):
+        print("Password must contain a number!")
+    else: 
+        print("Password is Strong!")
+        #CAPTCHA
+        x = random.randint(1,10)
+        y = random.randint(1,10)
+        print("What is", x, "+", y, "?: ")
+        answer = int(input())
+        if answer != x + y:
+            print("Incorrect")
+        else:
+            print("Correct!")
+            n-=1
+            return n
+
+sign_log = input("Already have an account? y/n: ")
+
+def sign_up(answer):
+    #sing_up function inluding spv ction
+    username = ""
+    global n
+    if answer is "n":
+        while True:
+        #tests the username, making sure both a first name and last name have been entered
+            first_name = input("First name: ")
+            last_name = input("Last name: ")
+            if len(first_name.strip()) and len(last_name.strip()) != 0:
+                break
+            else:
+                print("You must enter your First and Last name!")
+        
+        while True:
+        #test to see if the passwords match, then runs the password through the spv function
+            password = input("Password: ")
+            password2 = input("Re-enter password: ")
+            spv(password)
+
+            if n != 0:
+                print("Re-enter password")
+            elif password != password2:   
+                print("Passwords do NOT match!") 
+            else:
+                break
+                
+
+        #creates a username by taking the first letter of the first name and then adding it to the start of the last name.
+        username =  first_name[0] + last_name 
+        
+        #adds a number to the end of the username representing the number of occurances of said username. Prevents clones
+        print(username)
+        with open("usernames.txt", "r+") as f:
+            data = f.read()
+            username_occurnaces = data.count(username)
+            
+            if username_occurnaces > 0:
+                username = username + str(username_occurnaces)
+           
+            print(username)
+            credentials = "\n" + username + "," + password + ","
+            f.write(credentials)
+       
+    
+    else:
+        pass
+    
+sign_up(sign_log)
+
+
+
+def options(option):
+#The main body of the imginary app
+    running = 1
+    global active
+    global credentials
+    
+    option = int(option)
+    
+    while running != 0:
+    
+        global n
+        n = 1
+        
+        if option == 1:
+            #option to change the password
+            crnt_pswrd = input("Current Password: ")
+                
+            if username+","+crnt_pswrd+"," == credentials:
+                #changes the password
+                password = input("New Password: ")
+                new_pass2 = input("Re-enter New Password: ")
+                spv(password)
+                
+                if n != 0:
+                    print("Re-enter password")
+                    
+                elif password == new_pass2:
+                    #updates the credentials
+                    credential = username+","+password+","
+                    
+                    with open("usernames.txt", "r") as f:
+                        data = f.read()
+                        
+                    with open("usernames.txt", "w") as f:
+                        data_new = data.replace(credentials, credential)
+                        f.write(data_new)
+                    
+                    print("Changing Password")
+                    running -=1
+                    
+                else:
+                    print("Passwords do NOT match!")
+                    
+            else:
+                print("Wrong Username or Password!")
+                
+        elif option == 2:
+            #signs the user out of the application
+            running -= 1
+            active -=1        
+                
+        else:
+            print(option, "is not an option, please try again.")
+
+
+
+
+print("#####################")
+print("#    Login Screen   #")
+print("#####################")
+#limits sign-in attempts
+attempts = [2,1,0]
+for i in attempts:
+    username = input("Username? ")
+    password = input("Password? ")
+
+
+    file = open("usernames.txt","r+")
+
+    credentials = username + "," + password + ","
+    
+    data = file.read()
+    if credentials in data:
+        #checks whether the username and password are inside the text document
+        print("Logged in as: ", username)
+        
+        while active != 0:
+            #option UI
+            print("\n Options: \n 1: New Password, 2: Exit")
+            option = input("Select Option: ")
+            options(option)
+        file.close()
+        print("end")     
+         
+    else:
+        
+        print("Incorrect Username or Password", i, "attempts remaining!")
+        
+ #needs somethnig to end the program...
+       
